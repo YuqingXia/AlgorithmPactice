@@ -30,12 +30,12 @@ string hrml_query(HRML & root, string & query) {
                 break;
             }
         }
-        start_pos = pos;
+        start_pos = pos+1;
     }
 
     pos=query.find("~", start_pos);
     string tag_name = query.substr(start_pos, pos - start_pos);
-    string tag_attr = query.substr(pos, query.length() - pos);
+    string tag_attr = query.substr(pos+1, query.length() - pos);
     
     for(size_t n=0; n < node -> child.size(); ++n){
         child = node -> child[n].get();
@@ -45,9 +45,13 @@ string hrml_query(HRML & root, string & query) {
         }
     }
 
-    string attr_value = node -> attrs[tag_attr];
-
+	string attr_value("Not Found!");
+	if( node -> attrs.find(tag_attr) != node -> attrs.end() ){
+		attr_value = node -> attrs.at(tag_attr);
+	}
+	
     return attr_value;
+
 }
 
 
@@ -72,6 +76,7 @@ unique_ptr<HRML> input_line_parser(string & str) {
         for(size_t n = 0; n < (ele.size() - 1)/3; ++n ){
             string attr_name = ele[1+3*n];
             string attr_value = ele[1+3*n+2];
+			attr_value = attr_value.substr(1, attr_value.size()-2); //remove the double quote
             node -> attrs [attr_name] = attr_value; 
         }
         return node;
@@ -98,7 +103,7 @@ unique_ptr<HRML> hrml_input( size_t line_num ) {
            if(parent -> parent == nullptr){
                 break;
            }else{
-                parent = (parent -> parent).get();
+                parent = parent -> parent;
            }
         }else{
            node -> parent = parent;
@@ -123,7 +128,7 @@ int main() {
     for(size_t n=0; n< Q; ++n){
         cin >> query; 
         string result = hrml_query(*root, query);
-        cout << result; 
+        cout << result << endl; 
     }
 
     return 0; 
